@@ -1,74 +1,39 @@
-name: CI Pipeline
+name: Build and Test Qt C++ Application
 
 on:
   push:
     branches:
-      - main
+      - main  # Puoi modificare la branch di riferimento
   pull_request:
     branches:
-      - main
+      - main  # Puoi modificare la branch di riferimento
 
 jobs:
   build:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest  # Usa Ubuntu, ma puoi cambiare per il sistema operativo che preferisci
 
     steps:
-      - name: Check out the code
-        uses: actions/checkout@v2
+    - name: Checkout code
+      uses: actions/checkout@v2
 
-      - name: Install Qt using the Qt Online Installer
-        run: |
-          # Scarica l'installer Qt 5.15.2
-          Invoke-WebRequest -Uri https://download.qt.io/archive/qt/5.15/5.15.2/qt-opensource-windows-x86-5.15.2.exe -OutFile qt-installer.exe
-          Start-Process -FilePath qt-installer.exe -ArgumentList "/S" -Wait
+    - name: Set up Qt
+      uses: olegs/qt-action@v2
+      with:
+        version: '6.4.0'  # Sostituisci con la versione di Qt necessaria
+        host: 'ubuntu'    # Puoi usare altre opzioni come 'mac' o 'windows' se necessario
+        target: 'linux'   # Imposta il target, ad esempio 'linux', 'win64', 'osx', ecc.
+    
+    - name: Install build dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y build-essential qtbase5-dev qtchooser qt5-qmake qtbase5-dev-tools
 
-      - name: Set up environment variables for Qt
-        run: |
-          # Imposta le variabili d'ambiente per Qt
-          $env:PATH += ";C:\Qt\5.15.2\mingw81_64\bin"  # Modifica se la tua installazione Qt è in una directory diversa
-          $env:QTDIR = "C:\Qt\5.15.2"
+    - name: Compile Qt project
+      run: |
+        qmake QtDemoApp.pro  # Esegui qmake sul file del progetto
+        make -j$(nproc)      # Compila il progetto usando il numero massimo di core disponibili
 
-      - name: Build with qmake
-        run: |
-          qmake QtDemoApp.pro -r CONFIG+=debug
-          make
-
-      - name: Archive Debug artifacts
-        uses: actions/upload-artifact@v3
-        with:
-          name: debug-artifacts
-          path: debug/QtDemoApp.exe
-
-  deploy:
-    runs-on: windows-latest
-    needs: build
-
-    steps:
-      - name: Download debug artifacts
-        uses: actions/download-artifact@v3
-        with:
-          name: debug-artifacts
-
-      - name: Deploy with windeployqt
-        run: |
-          windeployqt .\debug\QtDemoApp.exe
-
-      - name: Upload deployed artifacts
-        uses: actions/upload-artifact@v3
-        with:
-          name: deployed-debug-artifacts
-          path: debug/**
-
-  run:
-    runs-on: windows-latest
-    needs: deploy
-
-    steps:
-      - name: Download deployed artifacts
-        uses: actions/download-artifact@v3
-        with:
-          name: deployed-debug-artifacts
-
-      - name: Run the application
-        run: |
-          .\debug\QtDemoApp.exe
+    - name: Run tests (se necessario)
+      run: |
+        # Se hai test automatizzati o un'applicazione che si può eseguire, aggiungi il comando per eseguirla
+        ./QtDemoApp  # Esegui l'applicazione se necessario, personalizza con il nome dell'eseguibile
