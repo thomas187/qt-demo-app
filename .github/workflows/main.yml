@@ -1,39 +1,30 @@
-name: Build and Test Qt C++ Application
+name: Build and Run Qt Application
 
 on:
   push:
     branches:
-      - main  # Puoi modificare la branch di riferimento
+      - main
   pull_request:
     branches:
-      - main  # Puoi modificare la branch di riferimento
+      - main
 
 jobs:
   build:
-    runs-on: ubuntu-latest  # Usa Ubuntu, ma puoi cambiare per il sistema operativo che preferisci
+    runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
+    - name: Checkout repository
       uses: actions/checkout@v2
 
-    - name: Set up Qt
-      uses: olegs/qt-action@v2
-      with:
-        version: '6.4.0'  # Sostituisci con la versione di Qt necessaria
-        host: 'ubuntu'    # Puoi usare altre opzioni come 'mac' o 'windows' se necessario
-        target: 'linux'   # Imposta il target, ad esempio 'linux', 'win64', 'osx', ecc.
-    
-    - name: Install build dependencies
+    - name: Install Qt
       run: |
         sudo apt-get update
-        sudo apt-get install -y build-essential qtbase5-dev qtchooser qt5-qmake qtbase5-dev-tools
+        sudo apt-get install -y qt5-default qt5-qmake
 
-    - name: Compile Qt project
+    - name: Build Qt application
       run: |
-        qmake QtDemoApp.pro  # Esegui qmake sul file del progetto
-        make -j$(nproc)      # Compila il progetto usando il numero massimo di core disponibili
+        qmake QtDemoApp.pro
+        make
 
-    - name: Run tests (se necessario)
-      run: |
-        # Se hai test automatizzati o un'applicazione che si può eseguire, aggiungi il comando per eseguirla
-        ./QtDemoApp  # Esegui l'applicazione se necessario, personalizza con il nome dell'eseguibile
+    - name: Run Qt application
+      run: ./QtDemoApp
