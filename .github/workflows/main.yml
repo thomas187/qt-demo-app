@@ -1,0 +1,67 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Check out the code
+        uses: actions/checkout@v2
+
+      - name: Set up Qt
+        uses: action/qt-setup@v1  # Puoi aggiungere un'azione per configurare Qt, o configurarlo manualmente
+        with:
+          version: '5.15'  # Specifica la versione di Qt che stai utilizzando
+
+      - name: Build with qmake
+        run: |
+          qmake QtDemoApp.pro -r CONFIG+=debug
+          make
+
+      - name: Archive Debug artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: debug-artifacts
+          path: debug/QtDemoApp.exe
+
+  deploy:
+    runs-on: windows-latest
+    needs: build
+
+    steps:
+      - name: Download debug artifacts
+        uses: actions/download-artifact@v2
+        with:
+          name: debug-artifacts
+
+      - name: Deploy with windeployqt
+        run: |
+          windeployqt .\debug\QtDemoApp.exe
+
+      - name: Upload deployed artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: deployed-debug-artifacts
+          path: debug/**
+
+  run:
+    runs-on: windows-latest
+    needs: deploy
+
+    steps:
+      - name: Download deployed artifacts
+        uses: actions/download-artifact@v2
+        with:
+          name: deployed-debug-artifacts
+
+      - name: Run the application
+        run: |
+          .\debug\QtDemoApp.exe
