@@ -16,10 +16,10 @@ jobs:
       - name: Check out the code
         uses: actions/checkout@v2
 
-      - name: Set up Qt
-        uses: action/qt-setup@v1  # Puoi aggiungere un'azione per configurare Qt, o configurarlo manualmente
-        with:
-          version: '5.15'  # Specifica la versione di Qt che stai utilizzando
+      - name: Set up Qt (manual install)
+        run: |
+          # Scarica e installa Qt (modifica questo passaggio in base alla tua versione di Qt)
+          choco install qt --version=5.15.2
 
       - name: Build with qmake
         run: |
@@ -27,7 +27,7 @@ jobs:
           make
 
       - name: Archive Debug artifacts
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: debug-artifacts
           path: debug/QtDemoApp.exe
@@ -38,7 +38,7 @@ jobs:
 
     steps:
       - name: Download debug artifacts
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: debug-artifacts
 
@@ -47,7 +47,7 @@ jobs:
           windeployqt .\debug\QtDemoApp.exe
 
       - name: Upload deployed artifacts
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: deployed-debug-artifacts
           path: debug/**
@@ -58,7 +58,7 @@ jobs:
 
     steps:
       - name: Download deployed artifacts
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: deployed-debug-artifacts
 
