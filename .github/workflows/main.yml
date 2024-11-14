@@ -1,30 +1,34 @@
-name: Build and Run Qt Application
-
-on:
-  push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
-
-jobs:
-  build:
-    runs-on: ubuntu-latest
-
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
-
-    - name: Install Qt
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y qt5-default qt5-qmake
-
-    - name: Build Qt application
-      run: |
-        qmake QtDemoApp.pro
-        make
-
-    - name: Run Qt application
-      run: ./QtDemoApp
+puoi attingere le informazioni necessarie, sapendo che in bitbucket ci sono riuscito, per un altro progetto, così:
+pipelines:
+  default:
+    - step:
+        script:
+          - echo "This script runs on all branches that don't have any specific pipeline assigned in 'branches'."
+  branches:
+    master:
+      - step:
+          name: "Build"
+          artifacts: # defining the artifacts to be passed to each future step.
+            - debug/TestRepoPipeline.exe
+          runs-on:
+            - self.hosted
+            - windows
+          script:
+            - qmake TestRepoPipeline.pro -r CONFIG+=debug
+            - make
+      - step:
+          name: "Deploy"
+          runs-on:
+            - self.hosted
+            - windows
+          script:
+            - windeployqt .\debug\TestRepoPipeline.exe
+          artifacts: # defining the artifacts to be passed to each future step.
+            - debug/**
+      - step:
+          name: "Run"
+          runs-on:
+            - self.hosted
+            - windows
+          script:
+            - .\debug\TestRepoPipeline.exe
