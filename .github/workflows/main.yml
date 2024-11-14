@@ -18,8 +18,8 @@ jobs:
 
       - name: Install Qt using the Qt Online Installer
         run: |
-          # Scarica il Qt Installer (versione 5.15.2)
-          Invoke-WebRequest -Uri https://download.qt.io/official_releases/qt/5.15/5.15.2/qt-opensource-windows-x86-5.15.2.exe -OutFile qt-installer.exe
+          # Scarica l'installer Qt 5.15.2
+          Invoke-WebRequest -Uri https://download.qt.io/archive/qt/5.15/5.15.2/qt-opensource-windows-x86-5.15.2.exe -OutFile qt-installer.exe
           Start-Process -FilePath qt-installer.exe -ArgumentList "/S" -Wait
 
       - name: Set up environment variables for Qt
